@@ -14,7 +14,8 @@ dev = [
     "uv>=0.10.0",
 ]
 ui_user = [
-    "streamlit>=1.41.1"
+    "streamlit>=1.41.1",
+    "pandas>=2.2.1",
 ]
 
 [build-system]

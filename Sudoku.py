@@ -2,6 +2,8 @@ import numpy as np
 
 
 class SudokuGrid:
+    ### The original grid is represented as a 2D numpy array of strings, where empty cells are represented as ''.
+
     def __init__(self, grid):
         self.grid = grid
         self.vars = {"any_changes": False}
