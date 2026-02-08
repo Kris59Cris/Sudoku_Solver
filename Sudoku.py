@@ -8,8 +8,6 @@ class SudokuGrid:
 
         self.candidates = np.zeros_like(grid, dtype=object)
         self._initialize_candidates()
-        if self.check_invalid():
-            return "Invalid Sudoku grid: duplicate values found in rows, columns, or boxes."
 
     def _initialize_candidates(self):
         for i in range(9):
@@ -231,24 +229,26 @@ class SudokuGrid:
 
         return False
 
-    def updating_candidate(self):
+    def solve(self):
+        if self.check_invalid():
+            return "Invalid Sudoku grid: duplicate values found in rows, columns, or boxes."
+
         while self.check_if_single_candidate() or self.vars["any_changes"]:
             self.fill_in_single_candidate()
             self.only_candidate_in_box()
             self.hidden_candidate_line()
 
 
-file_path = "sample.csv"
+if __name__ == "__main__":
+    file_path = "sample.csv"
 
-# Load the CSV file into a 2D NumPy array
-data = np.genfromtxt(file_path, delimiter=",", dtype=str, filling_values=np.nan)
+    # Load the CSV file into a 2D NumPy array
+    data = np.genfromtxt(file_path, delimiter=",", dtype=str, filling_values=np.nan)
 
-s = SudokuGrid(data)
-s.updating_candidate()
-print(s.candidates)
-print(s.grid)
+    s = SudokuGrid(data)
+    s.solve()
+    print(s.grid)
+    # import pandas as pd
 
-# import pandas as pd
-
-# df = pd.DataFrame(s.grid)
-# df.to_csv("output.csv", index=False, header=False)
+    # df = pd.DataFrame(s.grid)
+    # df.to_csv("output.csv", index=False, header=False)
