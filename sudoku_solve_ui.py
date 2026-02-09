@@ -117,7 +117,6 @@ def main():
         column_config=st.session_state.col_config,
         key="inputed_sudoku_display" + str(st.session_state.uploader_key),
     )
-    st.write(st.session_state.uploader_key)
 
     # add 2 buttons: "Solve Sudoku", "Clear cache"
     col1, col2, col3 = st.columns(3)

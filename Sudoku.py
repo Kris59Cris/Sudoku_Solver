@@ -94,6 +94,7 @@ class SudokuGrid:
                                     and candidate in self.candidates[row, col]
                                 ):
                                     self.candidates[row, col].discard(candidate)
+                                    self.vars["any_changes"] = True
                                     if not self.candidates[row, col]:
                                         return False  # Invalid puzzle state
 
@@ -107,6 +108,7 @@ class SudokuGrid:
                                     and candidate in self.candidates[row, col]
                                 ):
                                     self.candidates[row, col].discard(candidate)
+                                    self.vars["any_changes"] = True
                                     if not self.candidates[row, col]:
                                         return False  # Invalid puzzle state
 
@@ -130,6 +132,56 @@ class SudokuGrid:
                         self.grid[i, j] = candidate
                         self.candidates[i, j] = candidate
                         self.updating_candidates()
+                        self.vars["any_changes"] = True
+
+        self.updating_candidates()
+
+    def naked_candidate_line(self):
+        # For each row, there is a naked pair or naked triple, if there are 2 or 3 cells in the same row that have the same 2 or 3 candidates, then those candidates can be eliminated from the rest of the row
+        for i in range(9):
+            row_candidates = {}
+            for j in range(9):
+                if isinstance(self.candidates[i, j], set):
+                    candidates_tuple = tuple(sorted(self.candidates[i, j]))
+                    if candidates_tuple not in row_candidates:
+                        row_candidates[candidates_tuple] = []
+                    row_candidates[candidates_tuple].append(j)
+
+            for candidates_tuple, positions in row_candidates.items():
+                if len(candidates_tuple) == len(positions) and len(positions) > 1:
+                    for col in range(9):
+                        if col not in positions:
+                            if isinstance(self.candidates[i, col], set) and any(
+                                candidate in self.candidates[i, col]
+                                for candidate in candidates_tuple
+                            ):
+                                self.candidates[i, col] -= set(candidates_tuple)
+                                self.vars["any_changes"] = True
+                                if not self.candidates[i, col]:
+                                    return False  # Invalid puzzle state
+
+        # For each column, there is a naked pair or naked triple, if there are 2 or 3 cells in the same column that have the same 2 or 3 candidates, then those candidates can be eliminated from the rest of the column
+        for j in range(9):
+            col_candidates = {}
+            for i in range(9):
+                if isinstance(self.candidates[i, j], set):
+                    candidates_tuple = tuple(sorted(self.candidates[i, j]))
+                    if candidates_tuple not in col_candidates:
+                        col_candidates[candidates_tuple] = []
+                    col_candidates[candidates_tuple].append(i)
+
+            for candidates_tuple, positions in col_candidates.items():
+                if len(candidates_tuple) == len(positions) and len(positions) > 1:
+                    for row in range(9):
+                        if row not in positions:
+                            if isinstance(self.candidates[row, j], set) and any(
+                                candidate in self.candidates[row, j]
+                                for candidate in candidates_tuple
+                            ):
+                                self.candidates[row, j] -= set(candidates_tuple)
+                                self.vars["any_changes"] = True
+                                if not self.candidates[row, j]:
+                                    return False  # Invalid puzzle state
 
         self.updating_candidates()
 
@@ -141,6 +193,7 @@ class SudokuGrid:
                     self.grid[i, j] = list(self.candidates[i, j])[0]
                     self.candidates[i, j] = self.grid[i, j]
                     self.updating_candidates()
+                    self.vars["any_changes"] = True
 
         ### in terms of box, if the a value can only be in one cell, then it must go there
         for box_row in range(3):
@@ -160,6 +213,7 @@ class SudokuGrid:
                         self.grid[i, j] = candidate
                         self.candidates[i, j] = candidate
                         self.updating_candidates()
+                        self.vars["any_changes"] = True
 
         ### in terms of rows, if the a value can only be in one cell, then it must go there
         for i in range(9):
@@ -177,6 +231,7 @@ class SudokuGrid:
                     self.grid[i, j] = candidate
                     self.candidates[i, j] = candidate
                     self.updating_candidates()
+                    self.vars["any_changes"] = True
 
         ### in terms of columns, if the a value can only be in one cell, then it must go there
         for j in range(9):
@@ -194,6 +249,7 @@ class SudokuGrid:
                     self.grid[i, j] = candidate
                     self.candidates[i, j] = candidate
                     self.updating_candidates()
+                    self.vars["any_changes"] = True
 
     def check_if_single_candidate(self):
         for i in range(9):
@@ -235,14 +291,19 @@ class SudokuGrid:
         if self.check_invalid():
             return "Invalid Sudoku grid: duplicate values found in rows, columns, or boxes."
 
+        self.only_candidate_in_box()
+        self.hidden_candidate_line()
+        self.naked_candidate_line()
         while self.check_if_single_candidate() or self.vars["any_changes"]:
+            self.vars["any_changes"] = False
             self.fill_in_single_candidate()
             self.only_candidate_in_box()
             self.hidden_candidate_line()
+            self.naked_candidate_line()
 
 
 if __name__ == "__main__":
-    file_path = "sample.csv"
+    file_path = "Solved_sudoku.csv"
 
     # Load the CSV file into a 2D NumPy array
     data = np.genfromtxt(file_path, delimiter=",", dtype=str, filling_values=np.nan)
@@ -250,6 +311,7 @@ if __name__ == "__main__":
     s = SudokuGrid(data)
     s.solve()
     print(s.grid)
+    print(s.candidates)
     # import pandas as pd
 
     # df = pd.DataFrame(s.grid)
