@@ -9,11 +9,18 @@ def clear_state():
     if "uploader_key" not in st.session_state:
         st.session_state.uploader_key = 0
     st.session_state.uploader_key += 1
+
+    # Clear the data editor input
+    if "inputed_sudoku" in st.session_state:
+        st.session_state.inputed_sudoku = st.session_state.initial_data
+
     st.session_state.clear_requested = True
 
 
 def solving_sudoku(edited_df):
-    clear_state()
+    st.session_state.status = ""
+    st.session_state.solution = None
+
     # Turn the edited dataframe into a 2D list of string for the Sudoku solver, where empty cells are represented as ''
     edited_df = edited_df.astype(str)
     edited_df = edited_df.replace("0", "")
@@ -59,6 +66,8 @@ def main():
         st.session_state.uploader_key = 0
     if "clear_requested" not in st.session_state:
         st.session_state.clear_requested = False
+    if "inputed_sudoku" not in st.session_state:
+        st.session_state.inputed_sudoku = None
 
     # Handle rerun at the start of main
     if st.session_state.clear_requested:
@@ -89,7 +98,6 @@ def main():
         )
         for col in st.session_state.initial_data.columns
     }
-    st.session_state.temp_debug_display = None
 
     if imported_data is not None:
         st.session_state.inputed_sudoku = pd.DataFrame(
@@ -107,8 +115,9 @@ def main():
     edited_input_df = st.data_editor(
         st.session_state.inputed_sudoku,
         column_config=st.session_state.col_config,
-        key="inputed_sudoku_display",
+        key="inputed_sudoku_display" + str(st.session_state.uploader_key),
     )
+    st.write(st.session_state.uploader_key)
 
     # add 2 buttons: "Solve Sudoku", "Clear cache"
     col1, col2, col3 = st.columns(3)
@@ -117,9 +126,10 @@ def main():
             "Solve Sudoku",
             on_click=solving_sudoku,
             args=(edited_input_df,),
+            key="solve_button",
         )
     with col2:
-        st.button("Clear cache", on_click=clear_state)
+        st.button("Clear cache", on_click=clear_state, key="clear_button")
 
     # Convert the dataframe to a 2D np-array for the Sudoku solver
     st.subheader("Result")
