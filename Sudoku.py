@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 class SudokuGrid:
@@ -303,16 +304,14 @@ class SudokuGrid:
 
 
 if __name__ == "__main__":
-    file_path = "Solved_sudoku.csv"
+    file_path = "input_sudoku.csv"
 
     # Load the CSV file into a 2D NumPy array
     data = np.genfromtxt(file_path, delimiter=",", dtype=str, filling_values=np.nan)
 
     s = SudokuGrid(data)
     s.solve()
-    print(s.grid)
-    print(s.candidates)
-    # import pandas as pd
 
-    # df = pd.DataFrame(s.grid)
-    # df.to_csv("output.csv", index=False, header=False)
+    # export the result to a csv file
+    df = pd.DataFrame(s.grid)
+    df.to_csv("output_sudoku.csv", index=False, header=False)
