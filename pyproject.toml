@@ -8,6 +8,7 @@ requires-python = ">=3.8"
 dependencies = [
     "numpy>=1.25.2",
     "pandas>=2.2.1",
+    "more-itertools>=10.8.0",
 ]
 
 [project.optional-dependencies]
